@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
@@ -11,8 +12,9 @@ GetIt getIt = GetIt.instance;
 
 class AuthProvider extends ChangeNotifier {
   final _key = "jwt331";
-  Auth? _auth;
   final _storage = const FlutterSecureStorage();
+  late Timer _timer;
+  Auth? _auth;
 
   AuthProvider() {
     _storage.read(key: _key).then(_setarAuth);
@@ -25,6 +27,8 @@ class AuthProvider extends ChangeNotifier {
 
     _auth = Auth.fromJson(json.decode(value));
     notifyListeners();
+
+    _reiniciarTimer();
   }
 
   Future<bool> login(LoginRequestModel request) async {
@@ -42,14 +46,55 @@ class AuthProvider extends ChangeNotifier {
     _auth = auth;
     notifyListeners();
 
+    _reiniciarTimer();
+
     return true;
   }
 
   logout() {
     _storage.delete(key: _key).then((value) {
+      _timer.cancel();
+
       _auth = null;
       notifyListeners();
     });
+  }
+
+  _reiniciarTimer() async {
+    if (_auth == null) {
+      return;
+    }
+
+    var duration = _auth!.expiration.difference(DateTime.now().add(const Duration(minutes: 10)));
+
+    if (duration.isNegative) {
+      await _atualizarToken();
+      return;
+    }
+
+    debugPrint("Duration é: $duration");
+
+    _timer = Timer(duration, () async => await _atualizarToken());
+  }
+
+  Future<bool> _atualizarToken() async {
+    var s = getIt<MangosApiService>();
+
+    var auth = await s.refresh();
+    if (auth == null) {
+      return false;
+    }
+
+    var authEncode = json.encode(auth.toJson(), toEncodable: _myEncode);
+
+    await _storage.write(key: _key, value: authEncode);
+
+    _auth = auth;
+    notifyListeners();
+
+    _reiniciarTimer();
+
+    return true;
   }
 
   bool get isAuthenticated {

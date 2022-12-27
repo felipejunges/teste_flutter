@@ -31,7 +31,7 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               ElevatedButton(
-                onPressed: () => _abrirPagina(context, const PaginaDois()),
+                onPressed: () => _abrirPagina(context, PaginaDois()),
                 child: const Text("Página 2"),
               ),
               ElevatedButton(

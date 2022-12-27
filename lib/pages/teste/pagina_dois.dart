@@ -14,7 +14,7 @@ class PaginaDois extends StatefulWidget {
 }
 
 class _PaginaDoisState extends State<PaginaDois> {
-  List<SaldoContaModel> _saldosConta = [];
+  late Future<List<SaldoContaModel>> _future;
 
   @override
   Widget build(BuildContext context) {
@@ -24,31 +24,57 @@ class _PaginaDoisState extends State<PaginaDois> {
     );
   }
 
-  _page() {
+  @override
+  void initState() {
+    super.initState();
+
+    _atualizarFuture();
+  }
+
+  void _atualizarFuture() {
+    setState(() {
+      _future = getIt<MangosApiService>().getSaldosConta();
+    });
+  }
+
+  Widget _page() {
     return Column(
       children: [
-        ElevatedButton(onPressed: _buscarItens, child: const Text('Buscar')),
-        Expanded(child: _itens()),
+        ElevatedButton(onPressed: () => _atualizarFuture(), child: const Text('Buscar')),
+        Expanded(child: _novoBody()),
       ],
     );
   }
 
-  _buscarItens() async {
-    var saldosConta = await getIt<MangosApiService>().getSaldosConta();
+  Widget _novoBody() {
+    return FutureBuilder(
+      future: _future,
+      builder: (BuildContext context, AsyncSnapshot<List<SaldoContaModel>> snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-    setState(() {
-      _saldosConta = saldosConta;
-    });
+        if (snapshot.error != null) {
+          return const Center(child: Text("Ih, deu boxta merrmão"));
+        }
+
+        if (!snapshot.hasData) {
+          return const Center(child: Text("Terminou, mas veio vazio :("));
+        }
+
+        return _itens(snapshot.data);
+      },
+    );
   }
 
-  _itens() {
+  Widget _itens(itens) {
     return ListView.builder(
-      itemCount: _saldosConta.length,
+      itemCount: itens.length,
       itemBuilder: (BuildContext context, int index) => GestureDetector(
         onTap: () => {
           _tapItem(context),
         },
-        child: SaldoContaCard(_saldosConta[index]),
+        child: SaldoContaCard(itens[index]),
       ),
     );
   }

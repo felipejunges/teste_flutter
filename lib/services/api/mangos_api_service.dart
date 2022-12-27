@@ -54,7 +54,7 @@ class MangosApiService {
   // TODO: todos os demais métodos devem usar um interceptor, pra não precisar usar o AuthService
   //
 
-  Future<bool> refresh() async {
+  Future<Auth?> refresh() async {
     final url = Uri.parse('$apiUrl/api/Login');
     final headers = {"Content-Type": "application/json"};
 
@@ -84,13 +84,13 @@ class MangosApiService {
         print("Body: ${response.body}");
         print("AuthToken: ${auth.token}");
 
-        return true;
+        return auth;
       } else {
-        return false;
+        return null;
       }
     } catch (error) {
       print("Erro: $error");
-      return false;
+      return null;
     }
   }
 
@@ -126,7 +126,7 @@ class MangosApiService {
       }
     } catch (error) {
       print("Erro: $error");
-      return [];
+      return Future.error(error);
     }
   }
 

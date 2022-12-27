@@ -178,8 +178,18 @@ class _PaginaTresState extends State<PaginaTres> {
     setState(() {
       _model.pessoaId = pessoaCoordenada.pessoaId;
       _model.descricao = pessoaCoordenada.ultimaDescricaoDespesa;
-      _model.contaBancariaId = pessoaCoordenada.contaBancariaId?.toString();
-      _model.cartaoCreditoId = pessoaCoordenada.cartaoCreditoId?.toString();
+
+      if (pessoaCoordenada.contaBancariaId != null) {
+        _model.contaBancariaId = pessoaCoordenada.contaBancariaId?.toString();
+      } else {
+        _model.contaBancariaId = null;
+      }
+
+      if (pessoaCoordenada.cartaoCreditoId != null) {
+        _model.cartaoCreditoId = pessoaCoordenada.cartaoCreditoId?.toString();
+      } else {
+        _model.cartaoCreditoId = null;
+      }
     });
   }
 
