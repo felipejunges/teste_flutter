@@ -34,7 +34,7 @@ class MangosApiService {
           )
           .timeout(const Duration(seconds: 45));
 
-      debugPrint(response.statusCode.toString());
+      debugPrint("StatusCode: ${response.statusCode}");
 
       if (response.statusCode == 200) {
         var responseModel = LoginResponseModel.fromJson(jsonDecode(response.body));
@@ -73,6 +73,8 @@ class MangosApiService {
             body: json.encode(body),
           )
           .timeout(const Duration(seconds: 45));
+
+      print("StatusCode: ${response.statusCode}");
 
       if (response.statusCode == 200) {
         var responseModel = LoginResponseModel.fromJson(jsonDecode(response.body));

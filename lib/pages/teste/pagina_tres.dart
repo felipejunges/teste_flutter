@@ -179,13 +179,13 @@ class _PaginaTresState extends State<PaginaTres> {
       _model.pessoaId = pessoaCoordenada.pessoaId;
       _model.descricao = pessoaCoordenada.ultimaDescricaoDespesa;
 
-      if (pessoaCoordenada.contaBancariaId != null) {
+      if (pessoaCoordenada.contaBancariaId != null && _itensContas.any((e) => e.value == pessoaCoordenada.contaBancariaId?.toString())) {
         _model.contaBancariaId = pessoaCoordenada.contaBancariaId?.toString();
       } else {
         _model.contaBancariaId = null;
       }
 
-      if (pessoaCoordenada.cartaoCreditoId != null) {
+      if (pessoaCoordenada.cartaoCreditoId != null && _itensCartoes.any((e) => e.value == pessoaCoordenada.cartaoCreditoId?.toString())) {
         _model.cartaoCreditoId = pessoaCoordenada.cartaoCreditoId?.toString();
       } else {
         _model.cartaoCreditoId = null;

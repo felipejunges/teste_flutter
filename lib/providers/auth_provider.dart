@@ -15,6 +15,8 @@ class AuthProvider extends ChangeNotifier {
   final _storage = const FlutterSecureStorage();
   late Timer _timer;
   Auth? _auth;
+  Auth? get auth => _auth;
+  bool isProcessing = false;
 
   AuthProvider() {
     _storage.read(key: _key).then(_setarAuth);
@@ -34,7 +36,14 @@ class AuthProvider extends ChangeNotifier {
   Future<bool> login(LoginRequestModel request) async {
     var s = getIt<MangosApiService>();
 
+    isProcessing = true;
+    notifyListeners();
+
     var auth = await s.login(request);
+
+    isProcessing = false;
+    notifyListeners();
+
     if (auth == null) {
       return false;
     }
@@ -67,20 +76,30 @@ class AuthProvider extends ChangeNotifier {
 
     var duration = _auth!.expiration.difference(DateTime.now().add(const Duration(minutes: 10)));
 
+    debugPrint("Duration é: $duration");
+
     if (duration.isNegative) {
-      await _atualizarToken();
+      await refreshToken();
       return;
     }
 
-    debugPrint("Duration é: $duration");
-
-    _timer = Timer(duration, () async => await _atualizarToken());
+    _timer = Timer(duration, () async {
+      _timer.cancel();
+      await refreshToken();
+    });
   }
 
-  Future<bool> _atualizarToken() async {
+  Future<bool> refreshToken() async {
     var s = getIt<MangosApiService>();
 
+    isProcessing = true;
+    notifyListeners();
+
     var auth = await s.refresh();
+
+    isProcessing = false;
+    notifyListeners();
+
     if (auth == null) {
       return false;
     }

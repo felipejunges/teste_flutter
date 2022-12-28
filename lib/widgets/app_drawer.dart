@@ -34,7 +34,7 @@ class AppDrawer extends StatelessWidget {
                 Navigator.pop(context),
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => PaginaDois()),
+                  MaterialPageRoute(builder: (context) => const PaginaDois()),
                 ),
               },
             ),

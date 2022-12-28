@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
 import 'package:teste/pages/landing/landing_page.dart';
 import 'package:teste/pages/teste/pagina_dois.dart';
+import 'package:teste/pages/teste/pagina_quatro.dart';
 import 'package:teste/pages/teste/pagina_tres.dart';
 import 'package:teste/providers/auth_provider.dart';
 import 'package:teste/services/api/auth_service.dart';
@@ -31,12 +32,16 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               ElevatedButton(
-                onPressed: () => _abrirPagina(context, PaginaDois()),
+                onPressed: () => _abrirPagina(context, const PaginaDois()),
                 child: const Text("Página 2"),
               ),
               ElevatedButton(
                 onPressed: () => _abrirPagina(context, const PaginaTres()),
                 child: const Text("Página 3"),
+              ),
+              ElevatedButton(
+                onPressed: () => _abrirPagina(context, const PaginaQuatro()),
+                child: const Text("Página 4"),
               ),
             ],
           ),
