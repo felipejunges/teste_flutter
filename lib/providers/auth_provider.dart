@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/cupertino.dart'; // TODO: nao deveria ser o Material?
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:teste/models/auth.dart';
@@ -62,7 +62,7 @@ class AuthProvider extends ChangeNotifier {
 
   logout() {
     _storage.delete(key: _key).then((value) {
-      _timer.cancel();
+      if (_timer.isActive) _timer.cancel();
 
       _auth = null;
       notifyListeners();

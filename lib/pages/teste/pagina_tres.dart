@@ -25,6 +25,9 @@ class _PaginaTresState extends State<PaginaTres> {
   final _descricaoController = TextEditingController();
   final _valorController = MoneyMaskedTextController(initialValue: 0);
 
+  bool processandoGps = false;
+  bool incluindoDespesa = false;
+
   @override
   void initState() {
     super.initState();
@@ -44,6 +47,21 @@ class _PaginaTresState extends State<PaginaTres> {
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
+              ElevatedButton.icon(
+                onPressed: processandoGps ? null : _obterPessoaMaisProxima,
+                icon: processandoGps
+                    ? Container(
+                        width: 16,
+                        height: 16,
+                        padding: const EdgeInsets.all(2.0),
+                        child: const CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 3,
+                        ),
+                      )
+                    : const Icon(Icons.gps_fixed, size: 16),
+                label: const Text('GPS'),
+              ),
               TextFormField(
                 decoration: const InputDecoration(
                   label: Text('Pessoa'),
@@ -95,7 +113,7 @@ class _PaginaTresState extends State<PaginaTres> {
               ConstrainedBox(
                 constraints: const BoxConstraints(minWidth: double.infinity, minHeight: 25),
                 child: ElevatedButton(
-                  onPressed: _incluirDespesaRapida,
+                  onPressed: processandoGps || incluindoDespesa ? null : _incluirDespesaRapida,
                   child: const Text('Go!'),
                 ),
               ),
@@ -110,7 +128,19 @@ class _PaginaTresState extends State<PaginaTres> {
     _globalKey.currentState?.save();
 
     if (_globalKey.currentState?.validate() ?? false) {
-      await getIt<MangosApiService>().incluirDespesaRapida(_model);
+      setState(() {
+        incluindoDespesa = true;
+      });
+
+      if (await getIt<MangosApiService>().incluirDespesaRapida(_model)) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Despesa incluída com sucesso!")));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Erro ao incluir despesa rápida...")));
+      }
+
+      setState(() {
+        incluindoDespesa = false;
+      });
     }
   }
 
@@ -154,6 +184,11 @@ class _PaginaTresState extends State<PaginaTres> {
 
   _obterPessoaMaisProxima() async {
     debugPrint('Obtendo pessoa mais próxima');
+
+    setState(() {
+      processandoGps = true;
+    });
+
     var position = _determinePosition();
 
     position
@@ -176,6 +211,8 @@ class _PaginaTresState extends State<PaginaTres> {
     _descricaoController.text = pessoaCoordenada.ultimaDescricaoDespesa ?? "";
 
     setState(() {
+      processandoGps = false;
+
       _model.pessoaId = pessoaCoordenada.pessoaId;
       _model.descricao = pessoaCoordenada.ultimaDescricaoDespesa;
 
@@ -214,6 +251,9 @@ class _PaginaTresState extends State<PaginaTres> {
       return Future.error('Location permissions are permanently denied, we cannot request permissions.');
     }
 
-    return await Geolocator.getCurrentPosition();
+    return await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+      timeLimit: const Duration(seconds: 10),
+    );
   }
 }

@@ -22,17 +22,22 @@ class _PaginaQuatroState extends State<PaginaQuatro> {
 
   Widget _page() {
     return Consumer<AuthProvider>(
-      builder: (context, value, child) => Column(
-        children: [
-          Text("isProcessing: ${value.isProcessing.toString()}"),
-          Text("isAuthenticated: ${value.isAuthenticated.toString()}"),
-          Text("create: ${value.auth?.create.toString()}"),
-          Text("expiration: ${value.auth?.expiration.toString()}"),
-          ElevatedButton(
-            onPressed: _processando ? null : _refreshToken,
-            child: const Text("Refresh"),
-          ),
-        ],
+      builder: (context, value, child) => SizedBox(
+        width: double.infinity,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text("isProcessing: ${value.isProcessing.toString()}"),
+            Text("isAuthenticated: ${value.isAuthenticated.toString()}"),
+            Text("create: ${value.auth?.create.toString()}"),
+            Text("expiration: ${value.auth?.expiration.toString()}"),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _processando || value.isProcessing ? null : _refreshToken,
+              child: const Text("Refresh"),
+            ),
+          ],
+        ),
       ),
     );
   }

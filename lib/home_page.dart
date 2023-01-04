@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:provider/provider.dart';
-import 'package:teste/pages/landing/landing_page.dart';
 import 'package:teste/pages/teste/pagina_dois.dart';
 import 'package:teste/pages/teste/pagina_quatro.dart';
 import 'package:teste/pages/teste/pagina_tres.dart';
 import 'package:teste/providers/auth_provider.dart';
-import 'package:teste/services/api/auth_service.dart';
 import 'package:teste/widgets/app_drawer.dart';
 
 GetIt getIt = GetIt.instance;
