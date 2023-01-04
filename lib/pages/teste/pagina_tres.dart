@@ -25,15 +25,22 @@ class _PaginaTresState extends State<PaginaTres> {
   final _descricaoController = TextEditingController();
   final _valorController = MoneyMaskedTextController(initialValue: 0);
 
+  Position? currentPosition;
+
   bool processandoGps = false;
+  bool obtendoPessoa = false;
   bool incluindoDespesa = false;
 
   @override
   void initState() {
     super.initState();
 
-    Future.wait([_obterContasBancarias(), _obterCartoesCredito()]).then(
-      (value) => _obterPessoaMaisProxima(),
+    Future.wait([
+      _obterContasBancarias(),
+      _obterCartoesCredito(),
+      _obterPosition(),
+    ]).then(
+      (value) => _obterPessoaPelaPosition(),
     );
   }
 
@@ -48,7 +55,7 @@ class _PaginaTresState extends State<PaginaTres> {
           child: Column(
             children: [
               ElevatedButton.icon(
-                onPressed: processandoGps ? null : _obterPessoaMaisProxima,
+                onPressed: processandoGps ? null : _obterPositionEPessoa,
                 icon: processandoGps
                     ? Container(
                         width: 16,
@@ -113,7 +120,7 @@ class _PaginaTresState extends State<PaginaTres> {
               ConstrainedBox(
                 constraints: const BoxConstraints(minWidth: double.infinity, minHeight: 25),
                 child: ElevatedButton(
-                  onPressed: processandoGps || incluindoDespesa ? null : _incluirDespesaRapida,
+                  onPressed: processandoGps || incluindoDespesa || obtendoPessoa ? null : _incluirDespesaRapida,
                   child: const Text('Go!'),
                 ),
               ),
@@ -182,28 +189,33 @@ class _PaginaTresState extends State<PaginaTres> {
     });
   }
 
-  _obterPessoaMaisProxima() async {
+  _obterPositionEPessoa() async {
+    await _obterPosition();
+    await _obterPessoaPelaPosition();
+  }
+
+  Future _obterPosition() async {
     debugPrint('Obtendo pessoa mais próxima');
 
     setState(() {
       processandoGps = true;
     });
 
-    var position = _determinePosition();
+    currentPosition = await _determinePosition();
 
-    position
-        .then(
-          (value) => _handleGotPosition(value),
-        )
-        .onError(
-          (error, stackTrace) => {
-            debugPrint("Deu bosta no GPS: $error"),
-          },
-        );
+    setState(() {
+      processandoGps = false;
+    });
   }
 
-  _handleGotPosition(Position position) async {
-    var pessoaCoordenada = await getIt<MangosApiService>().getPessoaCoordenada(position.latitude, position.longitude);
+  _obterPessoaPelaPosition() async {
+    if (currentPosition == null) return;
+
+    setState(() {
+      obtendoPessoa = true;
+    });
+
+    var pessoaCoordenada = await getIt<MangosApiService>().getPessoaCoordenada(currentPosition!.latitude, currentPosition!.longitude);
 
     if (pessoaCoordenada == null) return;
 
@@ -211,7 +223,7 @@ class _PaginaTresState extends State<PaginaTres> {
     _descricaoController.text = pessoaCoordenada.ultimaDescricaoDespesa ?? "";
 
     setState(() {
-      processandoGps = false;
+      obtendoPessoa = false;
 
       _model.pessoaId = pessoaCoordenada.pessoaId;
       _model.descricao = pessoaCoordenada.ultimaDescricaoDespesa;
