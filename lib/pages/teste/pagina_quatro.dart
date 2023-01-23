@@ -31,6 +31,7 @@ class _PaginaQuatroState extends State<PaginaQuatro> {
             Text("isAuthenticated: ${value.isAuthenticated.toString()}"),
             Text("create: ${value.auth?.create.toString()}"),
             Text("expiration: ${value.auth?.expiration.toString()}"),
+            Text(_textoVencimento(value.auth?.expiration ?? DateTime.now())),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _processando || value.isProcessing ? null : _refreshToken,
@@ -40,6 +41,12 @@ class _PaginaQuatroState extends State<PaginaQuatro> {
         ),
       ),
     );
+  }
+
+  String _textoVencimento(DateTime expiration) {
+    return DateTime.now().isAfter(expiration)
+        ? "vencido: ${(DateTime.now().difference(expiration))}"
+        : "OK: ${(expiration.difference(DateTime.now()))}";
   }
 
   void _refreshToken() {

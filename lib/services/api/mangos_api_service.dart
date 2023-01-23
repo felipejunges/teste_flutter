@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:retry/retry.dart';
 import 'package:teste/models/api_error_model.dart';
 import 'package:teste/models/auth.dart';
 import 'package:teste/models/cartao_credito_model.dart';
@@ -26,13 +29,17 @@ class MangosApiService {
     try {
       debugPrint("Calling POST /Login...");
 
-      var response = await http
-          .post(
-            url,
-            headers: headers,
-            body: json.encode(body),
-          )
-          .timeout(const Duration(seconds: 45));
+      final response = await retry(
+        () => http
+            .post(
+              url,
+              headers: headers,
+              body: json.encode(body),
+            )
+            .timeout(const Duration(seconds: 15)),
+        retryIf: (e) => e is SocketException || e is TimeoutException,
+        maxAttempts: 3,
+      );
 
       debugPrint("StatusCode: ${response.statusCode}");
 
@@ -66,13 +73,17 @@ class MangosApiService {
     try {
       print("Calling PUT /Login...");
 
-      var response = await http
-          .put(
-            url,
-            headers: headers,
-            body: json.encode(body),
-          )
-          .timeout(const Duration(seconds: 45));
+      final response = await retry(
+        () => http
+            .put(
+              url,
+              headers: headers,
+              body: json.encode(body),
+            )
+            .timeout(const Duration(seconds: 15)),
+        retryIf: (e) => e is SocketException || e is TimeoutException,
+        maxAttempts: 3,
+      );
 
       print("StatusCode: ${response.statusCode}");
 
