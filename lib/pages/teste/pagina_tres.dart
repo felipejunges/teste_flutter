@@ -48,83 +48,85 @@ class _PaginaTresState extends State<PaginaTres> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Página três')),
-      body: Form(
-        key: _globalKey,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: [
-              ElevatedButton.icon(
-                onPressed: processandoGps ? null : _obterPositionEPessoa,
-                icon: processandoGps
-                    ? Container(
-                        width: 16,
-                        height: 16,
-                        padding: const EdgeInsets.all(2.0),
-                        child: const CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 3,
-                        ),
-                      )
-                    : const Icon(Icons.gps_fixed, size: 16),
-                label: const Text('GPS'),
-              ),
-              TextFormField(
-                decoration: const InputDecoration(
-                  label: Text('Pessoa'),
+      body: SingleChildScrollView(
+        child: Form(
+          key: _globalKey,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                ElevatedButton.icon(
+                  onPressed: processandoGps ? null : _obterPositionEPessoa,
+                  icon: processandoGps
+                      ? Container(
+                          width: 16,
+                          height: 16,
+                          padding: const EdgeInsets.all(2.0),
+                          child: const CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 3,
+                          ),
+                        )
+                      : const Icon(Icons.gps_fixed, size: 16),
+                  label: const Text('GPS'),
                 ),
-                controller: _pessoaController,
-                readOnly: true,
-              ),
-              TextFormField(
-                decoration: const InputDecoration(
-                  label: Text('Descrição'),
+                TextFormField(
+                  decoration: const InputDecoration(
+                    label: Text('Pessoa'),
+                  ),
+                  controller: _pessoaController,
+                  readOnly: true,
                 ),
-                onSaved: (value) => _model.descricao = value,
-                controller: _descricaoController,
-                validator: (value) {
-                  if (value?.isEmpty ?? true) {
-                    return 'A descrição deve ser informada';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                decoration: const InputDecoration(
-                  label: Text('Valor'),
+                TextFormField(
+                  decoration: const InputDecoration(
+                    label: Text('Descrição'),
+                  ),
+                  onSaved: (value) => _model.descricao = value,
+                  controller: _descricaoController,
+                  validator: (value) {
+                    if (value?.isEmpty ?? true) {
+                      return 'A descrição deve ser informada';
+                    }
+                    return null;
+                  },
                 ),
-                controller: _valorController,
-                onSaved: (value) => _model.valor = double.parse(value?.replaceAll(',', '.') ?? "0"),
-                keyboardType: TextInputType.number,
-              ),
-              DropdownButtonFormField<String>(
-                decoration: const InputDecoration(
-                  label: Text('Conta bancária'),
+                TextFormField(
+                  decoration: const InputDecoration(
+                    label: Text('Valor'),
+                  ),
+                  controller: _valorController,
+                  onSaved: (value) => _model.valor = double.parse(value?.replaceAll(',', '.') ?? "0"),
+                  keyboardType: TextInputType.number,
                 ),
-                hint: const Text('Conta bancária'),
-                items: _itensContas,
-                value: _model.contaBancariaId,
-                onChanged: onContaBancariaChanged,
-                isExpanded: true,
-              ),
-              DropdownButtonFormField<String>(
-                decoration: const InputDecoration(
-                  label: Text('Cartão de crédito'),
+                DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(
+                    label: Text('Conta bancária'),
+                  ),
+                  hint: const Text('Conta bancária'),
+                  items: _itensContas,
+                  value: _model.contaBancariaId,
+                  onChanged: onContaBancariaChanged,
+                  isExpanded: true,
                 ),
-                hint: const Text('Cartão de crédito'),
-                items: _itensCartoes,
-                value: _model.cartaoCreditoId,
-                onChanged: onCartaoCreditoChanged,
-                isExpanded: true,
-              ),
-              ConstrainedBox(
-                constraints: const BoxConstraints(minWidth: double.infinity, minHeight: 25),
-                child: ElevatedButton(
-                  onPressed: processandoGps || incluindoDespesa || obtendoPessoa ? null : _incluirDespesaRapida,
-                  child: const Text('Go!'),
+                DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(
+                    label: Text('Cartão de crédito'),
+                  ),
+                  hint: const Text('Cartão de crédito'),
+                  items: _itensCartoes,
+                  value: _model.cartaoCreditoId,
+                  onChanged: onCartaoCreditoChanged,
+                  isExpanded: true,
                 ),
-              ),
-            ],
+                ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: double.infinity, minHeight: 25),
+                  child: ElevatedButton(
+                    onPressed: processandoGps || incluindoDespesa || obtendoPessoa ? null : _incluirDespesaRapida,
+                    child: const Text('Go!'),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
