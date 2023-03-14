@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_masked_text2/flutter_masked_text2.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get_it/get_it.dart';
+import 'package:provider/provider.dart';
 import 'package:teste/models/despesa_rapida_model.dart';
+import 'package:teste/providers/auth_provider.dart';
 import 'package:teste/services/api/mangos_api_service.dart';
 
 GetIt getIt = GetIt.instance;
@@ -141,11 +143,15 @@ class _PaginaTresState extends State<PaginaTres> {
         incluindoDespesa = true;
       });
 
-      if (await getIt<MangosApiService>().incluirDespesaRapida(_model)) {
+      var provider = Provider.of<AuthProvider>(context, listen: false);
+
+      if (await getIt<MangosApiService>().incluirDespesaRapida(provider.auth, _model)) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Despesa incluída com sucesso!")));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Erro ao incluir despesa rápida...")));
       }
+
+      if (!mounted) return;
 
       setState(() {
         incluindoDespesa = false;
@@ -154,20 +160,30 @@ class _PaginaTresState extends State<PaginaTres> {
   }
 
   Future _obterContasBancarias() async {
-    var contasBancarias = await getIt<MangosApiService>().getContasBancarias();
+    var provider = Provider.of<AuthProvider>(context, listen: false);
+
+    var contasBancarias = await getIt<MangosApiService>().getContasBancarias(provider.auth);
+
+    if (!mounted) return;
 
     setState(() {
       _itensContas = contasBancarias
-          .map((e) => DropdownMenuItem<String>(
-                value: e.id.toString(),
-                child: Text(e.descricao),
-              ))
+          .map(
+            (e) => DropdownMenuItem<String>(
+              value: e.id.toString(),
+              child: Text(e.descricao),
+            ),
+          )
           .toList();
     });
   }
 
   Future _obterCartoesCredito() async {
-    var cartoesCredito = await getIt<MangosApiService>().getCartoesCredito();
+    var provider = Provider.of<AuthProvider>(context, listen: false);
+
+    var cartoesCredito = await getIt<MangosApiService>().getCartoesCredito(provider.auth);
+
+    if (!mounted) return;
 
     setState(() {
       _itensCartoes = cartoesCredito
@@ -205,6 +221,8 @@ class _PaginaTresState extends State<PaginaTres> {
 
     currentPosition = await _determinePosition();
 
+    if (!mounted) return;
+
     setState(() {
       processandoGps = false;
     });
@@ -217,12 +235,20 @@ class _PaginaTresState extends State<PaginaTres> {
       obtendoPessoa = true;
     });
 
-    var pessoaCoordenada = await getIt<MangosApiService>().getPessoaCoordenada(currentPosition!.latitude, currentPosition!.longitude);
+    var provider = Provider.of<AuthProvider>(context, listen: false);
+
+    var pessoaCoordenada = await getIt<MangosApiService>().getPessoaCoordenada(
+      provider.auth,
+      currentPosition!.latitude,
+      currentPosition!.longitude,
+    );
 
     if (pessoaCoordenada == null) return;
 
     _pessoaController.text = pessoaCoordenada.pessoaNome;
     _descricaoController.text = pessoaCoordenada.ultimaDescricaoDespesa ?? "";
+
+    if (!mounted) return;
 
     setState(() {
       obtendoPessoa = false;

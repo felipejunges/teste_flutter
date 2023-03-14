@@ -2,24 +2,28 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart'; // TODO: nao deveria ser o Material?
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:teste/models/auth.dart';
 import 'package:teste/models/login/login_request_model.dart';
 import 'package:teste/services/api/mangos_api_service.dart';
+import 'package:teste/services/secure_storage_service.dart';
 
 GetIt getIt = GetIt.instance;
 
+// enum Status {
+//   LoggedOut,
+//   LoggingIn,
+//   LoggedIn,
+// }
+
 class AuthProvider extends ChangeNotifier {
-  final _key = "jwt331";
-  final _storage = const FlutterSecureStorage();
   late Timer _timer;
   Auth? _auth;
   Auth? get auth => _auth;
   bool isProcessing = false;
 
   AuthProvider() {
-    _storage.read(key: _key).then(_setarAuth);
+    SecureStorageService.storage.read(key: SecureStorageService.key).then(_setarAuth);
   }
 
   _setarAuth(value) {
@@ -50,7 +54,7 @@ class AuthProvider extends ChangeNotifier {
 
     var authEncode = json.encode(auth.toJson(), toEncodable: _myEncode);
 
-    await _storage.write(key: _key, value: authEncode);
+    await SecureStorageService.storage.write(key: SecureStorageService.key, value: authEncode);
 
     _auth = auth;
     notifyListeners();
@@ -61,7 +65,7 @@ class AuthProvider extends ChangeNotifier {
   }
 
   logout() {
-    _storage.delete(key: _key).then((value) {
+    SecureStorageService.storage.delete(key: SecureStorageService.key).then((value) {
       if (_timer.isActive) _timer.cancel();
 
       _auth = null;
@@ -90,25 +94,27 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<bool> refreshToken() async {
+    if (_auth == null) return false;
+
     var s = getIt<MangosApiService>();
 
     isProcessing = true;
     notifyListeners();
 
-    var auth = await s.refresh();
+    var newAuth = await s.refresh(_auth!);
 
     isProcessing = false;
     notifyListeners();
 
-    if (auth == null) {
+    if (newAuth == null) {
       return false;
     }
 
-    var authEncode = json.encode(auth.toJson(), toEncodable: _myEncode);
+    var authEncode = json.encode(newAuth.toJson(), toEncodable: _myEncode);
 
-    await _storage.write(key: _key, value: authEncode);
+    await SecureStorageService.storage.write(key: SecureStorageService.key, value: authEncode);
 
-    _auth = auth;
+    _auth = newAuth;
     notifyListeners();
 
     _reiniciarTimer();

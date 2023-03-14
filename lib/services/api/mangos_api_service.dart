@@ -14,8 +14,7 @@ import 'package:teste/models/login/login_request_model.dart';
 import 'package:teste/models/login/login_response_model.dart';
 import 'package:teste/models/pessoa_coordenada_model.dart';
 import 'package:teste/models/saldo_conta_model.dart';
-
-import 'auth_service.dart';
+import 'package:teste/services/api/api_helper_service.dart';
 
 class MangosApiService {
   //static const String apiUrl = "https://localhost:5051";
@@ -57,18 +56,11 @@ class MangosApiService {
     }
   }
 
-  //
-  // TODO: todos os demais métodos devem usar um interceptor, pra não precisar usar o AuthService
-  //
-
-  Future<Auth?> refresh() async {
+  Future<Auth?> refresh(Auth currentAuth) async {
     final url = Uri.parse('$apiUrl/api/Login');
     final headers = {"Content-Type": "application/json"};
 
-    final authService = AuthService(); // TODO: interceptor
-    final auth = await authService.get();
-
-    final body = {'authenticationToken': auth?.token, 'refreshToken': auth?.refreshToken};
+    final body = {'authenticationToken': currentAuth.token, 'refreshToken': currentAuth.refreshToken};
 
     try {
       print("Calling PUT /Login...");
@@ -90,9 +82,7 @@ class MangosApiService {
       if (response.statusCode == 200) {
         var responseModel = LoginResponseModel.fromJson(jsonDecode(response.body));
 
-        final authService = AuthService();
-        final auth = Auth(responseModel.create, responseModel.expiration, responseModel.token, responseModel.refreshToken);
-        await authService.save(auth);
+        var auth = Auth(responseModel.create, responseModel.expiration, responseModel.token, responseModel.refreshToken);
 
         print("Body: ${response.body}");
         print("AuthToken: ${auth.token}");
@@ -107,14 +97,8 @@ class MangosApiService {
     }
   }
 
-  Future<List<SaldoContaModel>> getSaldosConta() async {
-    final authService = AuthService(); // TODO: interceptor
-    final auth = await authService.get();
-
+  Future<List<SaldoContaModel>> getSaldosConta(Auth? auth) async {
     final url = Uri.parse('$apiUrl/api/SaldoConta');
-    var headers = {
-      "Authorization": "Bearer ${auth?.token}",
-    };
 
     try {
       print("Calling GET /SaldoConta...");
@@ -122,7 +106,7 @@ class MangosApiService {
       var response = await http
           .get(
             url,
-            headers: headers,
+            headers: await ApiHelperService.buildHeaders(auth),
           )
           .timeout(const Duration(seconds: 45));
 
@@ -143,14 +127,8 @@ class MangosApiService {
     }
   }
 
-  Future<List<ContaBancariaModel>> getContasBancarias() async {
-    final authService = AuthService(); // TODO: interceptor
-    final auth = await authService.get();
-
+  Future<List<ContaBancariaModel>> getContasBancarias(Auth? auth) async {
     final url = Uri.parse('$apiUrl/api/ContaBancaria');
-    var headers = {
-      "Authorization": "Bearer ${auth?.token}",
-    };
 
     try {
       print("Calling GET /ContaBancaria...");
@@ -158,7 +136,7 @@ class MangosApiService {
       var response = await http
           .get(
             url,
-            headers: headers,
+            headers: await ApiHelperService.buildHeaders(auth),
           )
           .timeout(const Duration(seconds: 45));
 
@@ -179,14 +157,8 @@ class MangosApiService {
     }
   }
 
-  Future<List<CartaoCreditoModel>> getCartoesCredito() async {
-    final authService = AuthService(); // TODO: interceptor
-    final auth = await authService.get();
-
+  Future<List<CartaoCreditoModel>> getCartoesCredito(Auth? auth) async {
     final url = Uri.parse('$apiUrl/api/CartaoCredito');
-    var headers = {
-      "Authorization": "Bearer ${auth?.token}",
-    };
 
     try {
       debugPrint("Calling GET /CartaoCredito...");
@@ -194,7 +166,7 @@ class MangosApiService {
       var response = await http
           .get(
             url,
-            headers: headers,
+            headers: await ApiHelperService.buildHeaders(auth),
           )
           .timeout(const Duration(seconds: 45));
 
@@ -215,15 +187,9 @@ class MangosApiService {
     }
   }
 
-  Future<PessoaCoordenadaModel?> getPessoaCoordenada(double latitude, double longitude) async {
-    final authService = AuthService(); // TODO: interceptor
-    final auth = await authService.get();
-
+  Future<PessoaCoordenadaModel?> getPessoaCoordenada(Auth? auth, double latitude, double longitude) async {
     final url = Uri.parse(
         '$apiUrl/api/PessoaCoordenada?Latitude=${latitude.toString().replaceAll(',', '.')}&Longitude=${longitude.toString().replaceAll(',', '.')}');
-    var headers = {
-      "Authorization": "Bearer ${auth?.token}",
-    };
 
     try {
       print("Calling GET /PessoaCoordenada...");
@@ -231,7 +197,7 @@ class MangosApiService {
       var response = await http
           .get(
             url,
-            headers: headers,
+            headers: await ApiHelperService.buildHeaders(auth),
           )
           .timeout(const Duration(seconds: 45));
 
@@ -252,15 +218,8 @@ class MangosApiService {
     }
   }
 
-  Future<bool> incluirDespesaRapida(DespesaRapidaModel request) async {
-    final authService = AuthService(); // TODO: interceptor
-    final auth = await authService.get();
-
+  Future<bool> incluirDespesaRapida(Auth? auth, DespesaRapidaModel request) async {
     final url = Uri.parse('$apiUrl/api/DespesaRapida');
-    final headers = {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer ${auth?.token}",
-    };
     final body = request.toJson();
 
     debugPrint(json.encode(body));
@@ -271,7 +230,7 @@ class MangosApiService {
       var response = await http
           .post(
             url,
-            headers: headers,
+            headers: await ApiHelperService.buildHeaders(auth),
             body: json.encode(body),
           )
           .timeout(const Duration(seconds: 45));

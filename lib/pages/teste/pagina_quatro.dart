@@ -54,8 +54,14 @@ class _PaginaQuatroState extends State<PaginaQuatro> {
       _processando = true;
     });
 
-    Provider.of<AuthProvider>(context, listen: false).refreshToken().then((value) => setState(() {
+    Provider.of<AuthProvider>(context, listen: false).refreshToken().then(
+      (value) {
+        if (!mounted) return;
+
+        setState(() {
           _processando = false;
-        }));
+        });
+      },
+    );
   }
 }

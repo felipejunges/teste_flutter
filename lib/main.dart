@@ -4,14 +4,12 @@ import 'package:provider/provider.dart';
 import 'package:teste/home_page.dart';
 import 'package:teste/login_page.dart';
 import 'package:teste/providers/auth_provider.dart';
-import 'package:teste/services/api/auth_service.dart';
 import 'package:teste/services/api/mangos_api_service.dart';
 
 GetIt getIt = GetIt.instance;
 
 void main() {
   getIt.registerSingleton<MangosApiService>(MangosApiService(), signalsReady: true);
-  getIt.registerSingleton<AuthService>(AuthService(), signalsReady: true);
 
   runApp(const MyApp());
 }

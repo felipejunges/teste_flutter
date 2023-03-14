@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:provider/provider.dart';
 import 'package:teste/models/saldo_conta_model.dart';
+import 'package:teste/providers/auth_provider.dart';
 import 'package:teste/services/api/mangos_api_service.dart';
 import 'package:teste/widgets/saldo_conta_card.dart';
 
@@ -33,7 +35,8 @@ class _PaginaDoisState extends State<PaginaDois> {
 
   void _atualizarFuture() {
     setState(() {
-      _future = getIt<MangosApiService>().getSaldosConta();
+      var provider = Provider.of<AuthProvider>(context, listen: false);
+      _future = getIt<MangosApiService>().getSaldosConta(provider.auth);
     });
   }
 
